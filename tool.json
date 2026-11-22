@@ -1,16 +1,22 @@
 {
-  "id": "coolcode-tool-template",
-  "title": "CoolCode Tool Starter",
-  "description": "A browser-only example that trims lines and removes exact duplicates.",
-  "category": "security",
-  "tags": ["text", "lines", "duplicates"],
-  "icon": "scan-search",
-  "url": "/coolcode-tool-template/",
-  "source": "https://github.com/jsdyer/coolcode-tool-template",
+  "id": "tidereceipt",
+  "title": "Tide Receipt",
+  "description": "Save tomorrow’s tide predictions and compare them with measured water levels at Vancouver and Halifax.",
+  "category": "places",
+  "tags": [
+    "tides",
+    "Vancouver",
+    "Halifax",
+    "water levels",
+    "forecasts"
+  ],
+  "icon": "history",
+  "url": "/tidereceipt/",
+  "source": "https://github.com/jsdyer/tidereceipt",
   "hosting": "project",
   "access": "browser",
   "data_info": {
-    "mode": "local",
-    "detail": "The browser reads the text you paste and compares its lines."
+    "mode": "snapshot",
+    "detail": "Canadian Hydrographic Service tide predictions are saved before their target hours and matched to gauge readings."
   }
 }
