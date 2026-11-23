@@ -17,6 +17,7 @@
   "access": "browser",
   "data_info": {
     "mode": "snapshot",
-    "detail": "Canadian Hydrographic Service tide predictions are saved before their target hours and matched to gauge readings."
+    "detail": "Canadian Hydrographic Service tide predictions are saved before their target hours and matched to gauge readings.",
+    "cadence": "Every 6 hours"
   }
 }
