@@ -2,7 +2,7 @@
 
 Save future astronomical tide predictions for Vancouver and Halifax, then match them to later CHS gauge readings.
 
-Open https://coolcode.ca/tidereceipt/.
+Open https://coolcode.ca/tidereceipt/. To share a gauge, select it and copy the address. For example, [Halifax station 00490](https://coolcode.ca/tidereceipt/?station=00490) opens that station’s recent receipts. The method section links to the historical storm records for nearby Bedford Institute, which uses a separate gauge.
 
 <!-- coolcode:guide -->
 Choose a gauge and a saved receipt. A prediction of 3.2 m followed by a 3.5 m gauge reading gives a −0.3 m signed difference. That residual includes non-tidal effects and is not a storm-surge forecast score.

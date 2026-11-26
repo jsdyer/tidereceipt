@@ -24,6 +24,11 @@ def main():
                 if entities>1:page.select_option('#entity',index=1);assert page.locator('#rows tr').count()>0
                 page.screenshot(path=str(shots/'desktop.png'),full_page=True)
                 page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth');page.screenshot(path=str(shots/'mobile.png'),full_page=True)
+                for code in ('00490', '07735'):
+                    page.goto(f'http://127.0.0.1:{server.server_port}/{slug}/?station={code}')
+                    page.locator('#rows tr').first.wait_for()
+                    assert page.locator('#entity').input_value() == code
+                    assert page.locator('#method a[href="/stormtracks/events/dorian-2019/"]').count() == 1
                 assert not errors,errors;browser.close()
         finally:server.shutdown()
 if __name__=='__main__':main()

@@ -52,7 +52,13 @@ function render(){
   $('empty').hidden=Boolean(activeRows.length);text('empty',all.length?'No points match this filter. Try All points.':'No future predictions were available at this location during the saved collection window.');
   text('table-note',`Showing ${Math.min(activeRows.length,150)} of ${activeRows.length} points. CSV includes every point in this view. Times are UTC. ${config.tableNote}`);
 }
-$('entity').addEventListener('change',setReceipts);$('receipt').addEventListener('change',render);$('filter').addEventListener('change',render);
+$('entity').addEventListener('change', () => {
+  const view = new URL(location.href);
+  view.searchParams.set('station', $('entity').value);
+  history.replaceState(null, '', view);
+  setReceipts();
+});
+$('receipt').addEventListener('change',render);$('filter').addEventListener('change',render);
 $('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([csv(activeRows,config.kind)],{type:'text/csv;charset=utf-8'}));const a=link('Download',url);a.download=config.id+'-comparison.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 try{
  const response=await fetch('./data/index.json');if(!response.ok)throw new Error('Data unavailable');data=await response.json();
@@ -60,5 +66,9 @@ try{
  text('status',`Latest collection: ${when(data.collection.checked_at)}`);
  text('coverage',data.collection.providers.map(p=>`${p.name}: ${p.status}`).join(' · '));
  const age=(Date.now()-Date.parse(data.collection.checked_at))/3600000;if(age>config.staleHours)text('status',`Collection is overdue. Last checked ${when(data.collection.checked_at)}. Showing saved data.`);
- options($('entity'),groupReceipts(data.receipts));setReceipts();
+ const stations = groupReceipts(data.receipts);
+ options($('entity'),stations);
+ const station = new URLSearchParams(location.search).get('station');
+ if (stations.some(([code]) => code === station)) $('entity').value = station;
+ setReceipts();
 }catch(error){text('status','The saved data could not be loaded. Reload the page or use the repository archive.');$('export').disabled=true;console.error(error);}
