@@ -1,14 +1,13 @@
 {
   "id": "tidereceipt",
   "title": "Tide Receipt",
-  "description": "Save tomorrow’s tide predictions and compare them with measured water levels at Vancouver and Halifax.",
+  "description": "Compare saved hourly tide predictions with measured water levels at Canadian gauges from Vancouver to Charlottetown.",
   "category": "places",
   "tags": [
     "tides",
-    "Vancouver",
-    "Halifax",
-    "water levels",
-    "forecasts"
+    "Canadian tide gauges",
+    "predictions",
+    "water levels"
   ],
   "icon": "history",
   "url": "/tidereceipt/",
@@ -19,5 +18,9 @@
     "mode": "snapshot",
     "detail": "Canadian Hydrographic Service tide predictions are saved before their target hours and matched to gauge readings.",
     "cadence": "Every 6 hours"
+  },
+  "result_directory": {
+    "path": "stations/",
+    "title": "Canadian tide predictions and gauge readings by station"
   }
 }

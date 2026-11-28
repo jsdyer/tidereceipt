@@ -14,7 +14,24 @@ for(const source of config.sources){const a=el('a',source.label);a.href=source.u
 function link(label,href){const a=el('a',label);a.href=href;return a;}
 function options(node,values){node.replaceChildren();for(const [value,label] of values){const o=el('option',label);o.value=value;node.append(o);}}
 function receipts(){return data.receipts.filter(r=>r.entity===$('entity').value);}
-function setReceipts(){const available=receipts();options($('receipt'),available.map(r=>[r.id,`${r.items[0]?.target_time?.slice(0,10)||r.items[0]?.target?.slice(0,10)} · ${r.provenance==='published_archive'?'issued':'saved'} ${when(r.provenance==='published_archive'?r.issued_at:r.captured_at)} · ${r.items.length} points${r.provenance==='published_archive'?' · archived issue':''}`]));const matched=available.find(r=>matchRows(r,data.observations,config.kind).some(p=>p.observed!==null));if(matched)$('receipt').value=matched.id;render();}
+function setReceipts(selectedId){
+  const available=receipts();
+  const selectedStation=$('entity').selectedOptions[0];
+  $('station-summary').href=selectedStation?.dataset.href || './stations/';
+  text('station-summary', selectedStation ? 'Read the '+selectedStation.textContent+' station summary' : 'Read the station summary');
+  options($('receipt'),available.map(r=>[r.id,`${r.items[0]?.target_time?.slice(0,10)||r.items[0]?.target?.slice(0,10)} · ${r.provenance==='published_archive'?'issued':'saved'} ${when(r.provenance==='published_archive'?r.issued_at:r.captured_at)} · ${r.items.length} points${r.provenance==='published_archive'?' · archived issue':''}`]));const selected=available.find(r=>r.id===selectedId) || preferredReceipt(available);
+  if(selected) $('receipt').value=selected.id;
+  render();
+}
+function preferredReceipt(available) {
+  let partial;
+  for(const receipt of available) {
+    const rows=matchRows(receipt,data.observations,config.kind);
+    if(rows.length && rows.every(p=>p.observed!==null)) return receipt;
+    if(!partial && rows.some(p=>p.observed!==null)) partial=receipt;
+  }
+  return partial;
+}
 function chart(rows){
   const holder=$('chart');holder.replaceChildren();
   if(!rows.length){holder.append(el('p','No points match this view.'));return;}
@@ -55,10 +72,17 @@ function render(){
 $('entity').addEventListener('change', () => {
   const view = new URL(location.href);
   view.searchParams.set('station', $('entity').value);
+  view.searchParams.delete('receipt');
   history.replaceState(null, '', view);
   setReceipts();
 });
-$('receipt').addEventListener('change',render);$('filter').addEventListener('change',render);
+$('receipt').addEventListener('change',()=>{
+  const view=new URL(location.href);
+  view.searchParams.set('station',$('entity').value);
+  view.searchParams.set('receipt',$('receipt').value);
+  history.replaceState(null,'',view);
+  render();
+});$('filter').addEventListener('change',render);
 $('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([csv(activeRows,config.kind)],{type:'text/csv;charset=utf-8'}));const a=link('Download',url);a.download=config.id+'-comparison.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 try{
  const response=await fetch('./data/index.json');if(!response.ok)throw new Error('Data unavailable');data=await response.json();
@@ -67,8 +91,16 @@ try{
  text('coverage',data.collection.providers.map(p=>`${p.name}: ${p.status}`).join(' · '));
  const age=(Date.now()-Date.parse(data.collection.checked_at))/3600000;if(age>config.staleHours)text('status',`Collection is overdue. Last checked ${when(data.collection.checked_at)}. Showing saved data.`);
  const stations = groupReceipts(data.receipts);
+ const stationLinks=new Map([...$('entity').options].map(o=>[o.value,o.dataset.href]));
  options($('entity'),stations);
+ for(const option of $('entity').options){
+   if(stationLinks.has(option.value)) option.dataset.href=stationLinks.get(option.value);
+ }
  const station = new URLSearchParams(location.search).get('station');
- if (stations.some(([code]) => code === station)) $('entity').value = station;
- setReceipts();
+ if (stations.some(([code]) => code === station)) $('entity').value=station;
+ else {
+   const example=preferredReceipt(data.receipts);
+   if(example) $('entity').value=example.entity;
+ }
+ setReceipts(new URLSearchParams(location.search).get('receipt'));
 }catch(error){text('status','The saved data could not be loaded. Reload the page or use the repository archive.');$('export').disabled=true;console.error(error);}

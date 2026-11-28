@@ -1,16 +1,16 @@
 # Tide Receipt
 
-Save future astronomical tide predictions for Vancouver and Halifax, then match them to later CHS gauge readings.
+Save future astronomical tide predictions at seven Canadian stations, then match them to later CHS gauge readings.
 
-Open https://coolcode.ca/tidereceipt/. To share a gauge, select it and copy the address. For example, [Halifax station 00490](https://coolcode.ca/tidereceipt/?station=00490) opens that station’s recent receipts. The method section links to the historical storm records for nearby Bedford Institute, which uses a separate gauge.
+Open https://coolcode.ca/tidereceipt/. To share a gauge, select it and copy the address. For example, [Halifax station 00490](https://coolcode.ca/tidereceipt/?station=00490) opens that station’s recent receipts. [Browse station summaries](https://coolcode.ca/tidereceipt/stations/) for the latest saved reading, recent comparisons and direct evidence. The method section links to the historical storm records for nearby Bedford Institute, which uses a separate gauge.
 
 <!-- coolcode:guide -->
-Choose a gauge and a saved receipt. A prediction of 3.2 m followed by a 3.5 m gauge reading gives a −0.3 m signed difference. That residual includes non-tidal effects and is not a storm-surge forecast score.
+Choose a harbour to see how its latest measured water levels compared with predictions saved in advance. Each station summary links back to the gauge and the exact saved comparison. A prediction of 3.2 m followed by a 3.5 m gauge reading gives a −0.3 m signed difference. That residual includes non-tidal effects and is not a storm-surge forecast score.
 <!-- /coolcode:guide -->
 
 ## Collection
 
-No API key is required. Collection uses CHS IWLS station 07735 (Vancouver) and 00490 (Halifax), `wlp` predictions and `wlo` observations at hourly UTC timestamps. Both use chart datum. If CHS returns no Halifax gauge readings, the site explicitly marks them unavailable and keeps its predictions pending; Vancouver is never substituted for Halifax. Future predictions span 72 hours; observations cover the preceding 14 days. Only observation QC flag `1` is scored. Forecast QC flag `2` is retained as metadata and does not imply an observed measurement.
+No API key is required. Collection uses seven CHS IWLS stations (Charlottetown 01700, Churchill 05010, Halifax 00490, Port aux Basques 00665, Rimouski 02985, Saint John 00065 and Vancouver 07735), `wlp` predictions and `wlo` observations at hourly UTC timestamps. Both use local chart datum. Newly added gauges begin prospective comparison at their first saved prediction. Earlier observed levels can provide context but cannot produce a retrospective forecast score. If CHS returns no Halifax gauge readings, the site explicitly marks them unavailable and keeps its predictions pending; Vancouver is never substituted for Halifax. Future predictions span 72 hours; observations cover the preceding 14 days. Only observation QC flag `1` is scored. Forecast QC flag `2` is retained as metadata and does not imply an observed measurement.
 
 Schedule: **Every six hours at minute 29 (UTC)**. GitHub schedules are best effort, not a precise timer. Scheduled and manual runs collect; code pushes and pull requests only validate/build the saved archive.
 
@@ -23,7 +23,7 @@ python3 scripts/build.py
 
 The default build is offline. Collectors validate before saving; failed collection does not replace the good deployment. All dated normalized receipts are permanent tracked files under `archive/YYYY-MM/*.json.gz`. Each includes the capture time, source URL, SHA-256 of the downloaded response, selected values and provenance. These files preserve the selected data, not necessarily the full upstream response. Identical receipts deduplicate; old receipts are never overwritten. No Zenodo configuration is needed.
 
-The dashboard loads the most recent 14 days of captures. Older receipts remain downloadable through `data/archive.json` and retained in Git history. The archive is the durable record; Actions artifact retention is unrelated. Observation revisions remain in their dated source receipts; the dashboard uses the latest reading (or earliest stop encounter for transit). CSV export covers the selected receipt and filter. JSON and individual compressed receipt downloads preserve source links.
+The dashboard loads the most recent 14 days of captures. Older receipts remain downloadable through `data/archive.json` and retained in Git history. Every build regenerates the station directory, one HTML summary for each archived station and sitemap.xml. Each hourly comparison uses the latest prediction saved before its target. A recent range uses quality-flag-1 hourly readings in the 24 hours ending at the latest such reading. The archive is the durable record; Actions artifact retention is unrelated. Observation revisions remain in their dated source receipts; the dashboard uses the latest reading (or earliest stop encounter for transit). CSV export covers the selected receipt and filter. JSON and individual compressed receipt downloads preserve source links.
 
 ## Interpretation
 

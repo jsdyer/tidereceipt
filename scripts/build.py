@@ -14,10 +14,10 @@ SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 def metadata(root=ROOT):
     tool = json.loads((root / "tool.json").read_text(encoding="utf-8"))
-    required = {"id", "title", "description", "category", "tags", "icon", "url", "source", "hosting", "access", "data_info"}
+    required = {"id", "title", "description", "category", "tags", "icon", "url", "source", "hosting", "access", "data_info", "result_directory"}
     if not isinstance(tool, dict) or set(tool) != required:
         raise ValueError("tool.json has missing or unknown fields")
-    for key in required - {"tags", "data_info"}:
+    for key in required - {"tags", "data_info", "result_directory"}:
         if not isinstance(tool[key], str) or not tool[key].strip():
             raise ValueError(f"tool.json: {key} must be a nonempty string")
     if not SLUG.fullmatch(tool["id"]) or tool["url"] != f'/{tool["id"]}/' or tool["hosting"] != "project":
@@ -63,6 +63,10 @@ def build(root=ROOT):
             slug != "coolcode-tool-template"
             and tool["source"].rstrip("/") == f"https://github.com/jsdyer/{slug}"
         )
+        from station_pages import NOTICE
+        from stations import STATIONS
+        page = page.replace("{{CHS_NOTICE}}", NOTICE)
+        page = page.replace("{{STATION_LINKS}}", "".join(f'<option value="{station.code}" data-href="./stations/{station.slug}/">{escape(station.name)}</option>' for station in STATIONS))
         reporting = {
             "{{VISIT_COUNTER}}": '<script defer src="/assets/tool-metrics.js" referrerpolicy="no-referrer"></script>',
             "{{ISSUE_LINK}}": f'<a href="https://coolcode.ca/report/?tool={slug}" referrerpolicy="no-referrer">Report an issue</a>',
@@ -76,7 +80,7 @@ def build(root=ROOT):
         index.write_text(page, encoding="utf-8")
         (stage / ".nojekyll").touch()
         from build_data import assemble
-        assemble(root, stage)
+        assemble(root, stage, tool)
         if output.exists():
             shutil.rmtree(output)
         shutil.copytree(stage, output)

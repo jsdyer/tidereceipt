@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from build import ROOT, build, metadata
 
@@ -61,6 +62,24 @@ class BuildTests(unittest.TestCase):
         self.edit(data_info={"mode": "local", "detail": ""})
         with self.assertRaisesRegex(ValueError, "homepage card"):
             metadata(self.root)
+
+    def test_station_directory_uses_canonical_pages_and_preserves_prospective_matching(self):
+        from station_pages import compare_hours
+        target = "2026-11-04T12:00:00Z"
+        reading = {"target": target, "value": 2.40, "quality": "1"}
+        prior = {"captured_at": "2026-11-02T18:02:13Z", "items": [{"target": target, "value": 2.10}]}
+        later = {"captured_at": "2026-11-03T18:02:13Z", "items": [{"target": target, "value": 2.20}]}
+        self.assertEqual(compare_hours([prior, later], {target: reading}), [(target, (later["items"][0], later, reading))])
+        self.assertEqual(compare_hours([prior], {}), [])
+        build(self.root)
+        output = self.root / "dist"
+        paths = [node.text for node in ET.parse(output / "sitemap.xml").findall("./{*}url/{*}loc")]
+        self.assertIn("https://coolcode.ca/tidereceipt/stations/saint-john/", paths)
+        self.assertEqual(len(paths), len(set(paths)))
+        for url in paths:
+            local = url.removeprefix("https://coolcode.ca/tidereceipt/")
+            self.assertTrue(local.startswith("stations/"))
+            self.assertIn(f'rel="canonical" href="{url}"', (output / local / "index.html").read_text())
 
     def test_browser_access_is_explicit(self):
         self.edit(access="install")

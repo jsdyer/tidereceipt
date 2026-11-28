@@ -1,13 +1,33 @@
 {
-  "checked_at": "2026-11-28T14:38:40Z",
+  "checked_at": "2026-11-28T18:06:12Z",
   "providers": [
     {
-      "name": "Vancouver",
+      "name": "Charlottetown",
+      "status": "collected"
+    },
+    {
+      "name": "Churchill",
       "status": "collected"
     },
     {
       "name": "Halifax",
       "status": "predictions saved; gauge readings unavailable"
+    },
+    {
+      "name": "Port aux Basques",
+      "status": "collected"
+    },
+    {
+      "name": "Rimouski",
+      "status": "collected"
+    },
+    {
+      "name": "Saint John",
+      "status": "collected"
+    },
+    {
+      "name": "Vancouver",
+      "status": "collected"
     }
   ]
 }

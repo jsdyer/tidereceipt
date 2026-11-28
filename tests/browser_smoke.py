@@ -24,6 +24,14 @@ def main():
                 if entities>1:page.select_option('#entity',index=1);assert page.locator('#rows tr').count()>0
                 page.screenshot(path=str(shots/'desktop.png'),full_page=True)
                 page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth');page.screenshot(path=str(shots/'mobile.png'),full_page=True)
+                page.goto(f'http://127.0.0.1:{server.server_port}/{slug}/stations/')
+                page.get_by_role('link',name='Saint John',exact=True).click()
+                assert 'New Brunswick' in page.locator('main').inner_text()
+                assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+                page.get_by_role('link',name='Compare saved predictions').click()
+                page.locator('#rows tr').first.wait_for()
+                assert page.locator('#entity').input_value()=='00065'
+                assert page.locator('#station-summary').get_attribute('href')=='./stations/saint-john/'
                 for code in ('00490', '07735'):
                     page.goto(f'http://127.0.0.1:{server.server_port}/{slug}/?station={code}')
                     page.locator('#rows tr').first.wait_for()

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Capture future CHS predictions and quality-labelled observations at two gauges."""
+"""Capture future CHS predictions and quality-labelled observations at Canadian tide gauges."""
 import json,math,time
 from datetime import timedelta
 from urllib.parse import urlencode
 from common import ROOT,download,now,iso,date,record,save,status
 BASE='https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/'
-STATIONS=[('07735','Vancouver','5cebf1de3d0f4a073c4bb943'),('00490','Halifax','5cebf1df3d0f4a073c4bbcbb')]
+from stations import STATIONS
 
 def parse(raw,kind,captured):
     source=json.loads(raw)
@@ -25,16 +25,16 @@ def parse(raw,kind,captured):
 
 def main():
     records=[];states=[]
-    for code,label,station_id in STATIONS:
+    for station in STATIONS:
         stamp=now();start=stamp.replace(minute=0,second=0)
         observation_count=0
         for kind,series,begin,end in [('forecast','wlp',start,start+timedelta(days=3)),('observation','wlo',start-timedelta(days=14),start)]:
-            url=BASE+station_id+'/data?'+urlencode({'time-series-code':series,'from':iso(begin),'to':iso(end),'resolution':'SIXTY_MINUTES'})
+            url=BASE+station.api_id+'/data?'+urlencode({'time-series-code':series,'from':iso(begin),'to':iso(end),'resolution':'SIXTY_MINUTES'})
             raw=download(url);captured=now();points=parse(raw,kind,captured)
             if kind=='observation': observation_count=len(points)
-            if points: records.append(record(kind,code,label,url,raw,points,captured_at=iso(captured),provenance='prospective' if kind=='forecast' else 'observed',measurement='water-level',units='m',datum='chart datum',series=series))
+            if points: records.append(record(kind,station.code,station.name,url,raw,points,captured_at=iso(captured),provenance='prospective' if kind=='forecast' else 'observed',measurement='water-level',units='m',datum='chart datum',series=series))
             time.sleep(.5)
-        states.append({'name':label,'status':'collected' if observation_count else 'predictions saved; gauge readings unavailable'})
+        states.append({'name':station.name,'status':'collected' if observation_count else 'predictions saved; gauge readings unavailable'})
     for receipt in records:save(receipt)
     status(states)
     print(f'Saved {len(records)} CHS receipts; future predictions are kept separate from observations.')

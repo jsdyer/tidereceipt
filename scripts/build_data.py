@@ -4,7 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 from common import date,validate
 
-def assemble(root,output):
+def assemble(root,output,tool):
     receipts=[]; manifest=[]
     for path in sorted((root/'archive').glob('*/*.json.gz')):
         item=validate(json.loads(gzip.decompress(path.read_bytes())))
@@ -29,3 +29,5 @@ def assemble(root,output):
     (output/'data/index.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':'))+'\n')
     (output/'data/archive.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':'))+'\n')
     shutil.copytree(root/'archive',output/'archive')
+    from station_pages import write_station_pages
+    write_station_pages(output, tool, data, manifest)
